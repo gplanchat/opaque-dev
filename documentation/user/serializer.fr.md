@@ -50,25 +50,6 @@ Sans le bridge, les normaliseurs standards ne fuient pas non plus : ils ne trouv
 
 ## Avec gplanchat/durable
 
-Enregistrer le normaliseur n'y suffit pas encore : durable journalise les charges utiles des
-workflows et des activités avec `json_encode()`, pas avec Symfony Serializer, et son garde de rejeu
-compare les charges utiles, ce qu'un nonce neuf changerait à chaque passe. En attendant une
-intégration dédiée, on chiffre le secret là où l'exécution démarre, on fait traverser le workflow à
-la ligne sans la toucher, et on la déchiffre dans l'activité :
-
-```php
-// l'appelant
-$dispatcher->dispatchNewWorkflowRun($executionId, 'connect', [
-    'user' => 'alice',
-    'password' => $keyring->encrypt($password)->toWire(),
-]);
-
-// le workflow transmet la ligne enregistrée telle quelle : la même charge utile à chaque rejeu
-$activities->connect(user: $user, password: $password);
-
-// l'activité
-$password = $keyring->decrypt(Ciphered::fromWire($password), Password::class);
-```
-
-Passer directement un `Opaque` à un workflow ou à une activité échoue à l'écriture, avec
-`LeakRefused`, au lieu de journaliser un objet vide.
+La façon dont les secrets traversent le journal de durable relève de durable, qui la décide et la
+documente dans son propre guide. Ce composant garantit seulement qu'une valeur opaque n'atteint
+jamais un journal en clair : `json_encode()` et `serialize()` la refusent avec `LeakRefused`.

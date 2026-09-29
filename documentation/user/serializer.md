@@ -49,25 +49,6 @@ Without the bridge, the stock normalizers do not leak either: they find nothing 
 
 ## With gplanchat/durable
 
-Registering the normalizer is not enough there yet: durable journals workflow and activity
-payloads with `json_encode()`, not with Symfony Serializer, and its replay guard compares payloads,
-which a fresh nonce would change on every pass. Until a dedicated integration exists, cipher the
-secret where the run starts, carry the row through the workflow unchanged, and decipher it in the
-activity:
-
-```php
-// the caller
-$dispatcher->dispatchNewWorkflowRun($executionId, 'connect', [
-    'user' => 'alice',
-    'password' => $keyring->encrypt($password)->toWire(),
-]);
-
-// the workflow passes the recorded row on as is, so every replay rebuilds the same payload
-$activities->connect(user: $user, password: $password);
-
-// the activity
-$password = $keyring->decrypt(Ciphered::fromWire($password), Password::class);
-```
-
-Passing an `Opaque` to a workflow or an activity directly fails at the write, with `LeakRefused`,
-instead of journaling an empty object.
+How secrets travel through durable's journal is durable's to decide and document: see its own
+guide. This component only guarantees that an opaque value never reaches a journal in clear —
+`json_encode()` and `serialize()` refuse it with `LeakRefused`.

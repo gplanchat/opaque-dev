@@ -3,8 +3,8 @@ schema: spec-driven
 context: |
   PHP 8.2+ component of opaque value objects: secrets that refuse to leak through dumps,
   exports, serialize(), string casts and reflection-based normalizers, ciphered value objects
-  (libsodium) that may be stored, and a Symfony Serializer bridge. The motivating host is
-  gplanchat/durable, whose journal JSON-encodes payloads and compares them on replay (OPQ002). Framework-free core (gplanchat/opaque); the bridge is a separate package.
+  (libsodium) that may be stored, and a Symfony Serializer bridge. Host-agnostic: how a host
+  (gplanchat/durable, a framework) wires it in is that host's decision, recorded there. Framework-free core (gplanchat/opaque); the bridge is a separate package.
 
   Normative documentation is English (WA001). Development is TDD, Red then Green then
   Refactor (WA002). Architecture decisions live in documentation/adr/ as ADRs with OPQxxx
