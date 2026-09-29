@@ -1,0 +1,24 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+    # Level 8, no baseline: new code meets the level (OPQ004).
+    level: 8
+    paths:
+        - src/Opaque
+        - src/Bridge/Serializer
+        - tests/unit
+    excludePaths:
+        - src/*/vendor/*
+        - src/Bridge/*/vendor/*
+    reportUnmatchedIgnoredErrors: true
+    ignoreErrors:
+        # A test asserts at runtime what its types promise: an assertion PHPStan already proves is
+        # still the check the test makes, and what keeps it from being a test without assertion.
+        - identifier: staticMethod.alreadyNarrowedType
+          path: tests/*
+        # disclose() reaches it through Closure::bind, which PHPStan does not follow. Private on
+        # purpose: disclose() is the one name an audit greps for (OPQ001).
+        - identifier: method.unused
+          message: '#Opaque::reveal\(\) is unused#'
+          path: src/Opaque/Opaque.php

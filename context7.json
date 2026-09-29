@@ -1,0 +1,13 @@
+{
+    "$schema": "https://context7.com/schema/context7.json",
+    "projectTitle": "Opaque",
+    "description": "Opaque value objects for PHP (gplanchat/opaque): secrets that do not leak through var_dump, print_r, var_export, serialize, string casts or reflection-based normalizers, libsodium ciphering with key rotation, and a Symfony Serializer bridge.",
+    "folders": ["documentation/user"],
+    "excludeFiles": ["_index.fr.md", "getting-started.fr.md", "serializer.fr.md"],
+    "rules": [
+        "The package is gplanchat/opaque and its namespace is Gplanchat\\Opaque. Declare a secret by extending Gplanchat\\Opaque\\Opaque and build it with ::fromString().",
+        "Read a secret back only with the function Gplanchat\\Opaque\\disclose(); there is no getter.",
+        "To store a secret, cipher it through a Gplanchat\\Opaque\\Keyring and store Ciphered::toWire(); serialize() on an Opaque throws LeakRefused.",
+        "With Symfony Serializer, register Gplanchat\\Opaque\\Bridge\\Serializer\\OpaqueNormalizer before ObjectNormalizer."
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "name": "gplanchat/opaque",
+    "description": "Opaque value objects for PHP: secrets that refuse to leak through var_dump, print_r, var_export, serialize, string casts and reflection-based normalizers, with libsodium ciphering for the ones that must be stored",
+    "keywords": [
+        "opaque",
+        "secret",
+        "sensitive-data",
+        "value-object",
+        "sodium",
+        "encryption"
+    ],
+    "license": "MIT",
+    "type": "library",
+    "require": {
+        "php": ">=8.2",
+        "ext-sodium": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gplanchat\\Opaque\\": "./"
+        },
+        "files": [
+            "disclose.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "authors": [
+        {
+            "name": "Grégory Planchat",
+            "email": "gregory@gyroscops.com"
+        }
+    ]
+}

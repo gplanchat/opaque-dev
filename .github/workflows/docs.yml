@@ -1,0 +1,38 @@
+name: Documentation site
+
+# Builds the Hugo site so a broken page fails the pull request that broke it. No deployment yet:
+# the site has no host (hugo-docs/README.md).
+on:
+  pull_request:
+    paths:
+      - 'hugo-docs/**'
+      - 'documentation/user/**'
+      - '.github/workflows/docs.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'hugo-docs/**'
+      - 'documentation/user/**'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.159.2'
+          extended: true
+
+      - name: Build
+        working-directory: hugo-docs
+        run: hugo --gc

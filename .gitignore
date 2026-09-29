@@ -1,0 +1,26 @@
+# Local / editor noise
+.DS_Store
+*.swp
+*~
+/.idea/
+
+# Work journal day files (kept locally; see documentation/journal/README.md)
+documentation/journal/inbox/*.md
+documentation/journal/archive/*.md
+
+# Hugo: generated output and caches
+hugo-docs/public/
+hugo-docs/resources/
+hugo-docs/.hugo_build.lock
+
+# Dependencies and tool caches: never in the repository, every workstation rebuilds them.
+# `vendor/` without a leading slash also catches the satellite packages' one.
+vendor/
+.phpunit.cache/
+.php-cs-fixer.cache
+
+# The per-task checkouts under .worktrees/ — the coordination registry (prises/, PRISES.md) stays
+# tracked. Whatever else a workstation puts in the checkout belongs in .git/info/exclude, not here.
+/.worktrees/*
+!/.worktrees/prises/
+!/.worktrees/PRISES.md

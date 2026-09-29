@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="2"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
+>
+    <projectFiles>
+        <directory name="src/Opaque" />
+        <directory name="src/Bridge/Serializer" />
+        <directory name="tests/unit" />
+        <ignoreFiles allowMissingFiles="true">
+            <directory name="vendor" />
+            <directory name="src/Opaque/vendor" />
+            <directory name="src/Bridge/Serializer/vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <!-- #[\Override] requires PHP 8.3+; the project targets PHP 8.2+ -->
+        <MissingOverrideAttribute errorLevel="suppress" />
+    </issueHandlers>
+</psalm>

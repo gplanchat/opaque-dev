@@ -1,0 +1,58 @@
+{
+    "name": "gplanchat/opaque-monorepo",
+    "description": "Monorepo root: gplanchat/opaque + serializer bridge (dev tooling only).",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/gplanchat/opaque-dev/issues",
+        "source": "https://github.com/gplanchat/opaque-dev"
+    },
+    "type": "project",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "src/Opaque"
+        },
+        {
+            "type": "path",
+            "url": "src/Bridge/Serializer"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "gplanchat/opaque": "@dev",
+        "gplanchat/opaque-bridge-serializer": "@dev"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpunit/phpunit": "^11.5",
+        "symfony/property-access": "^6.4 || ^7.0 || ^8.0",
+        "vimeo/psalm": "^6.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "unit\\": "tests/unit/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test:coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text",
+        "cs:check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "vendor/bin/php-cs-fixer fix",
+        "phpstan": "vendor/bin/phpstan analyse",
+        "psalm": "vendor/bin/psalm --no-cache"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": false
+        }
+    },
+    "authors": [
+        {
+            "name": "Grégory Planchat",
+            "email": "gregory@gyroscops.com"
+        }
+    ]
+}

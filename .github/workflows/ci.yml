@@ -1,0 +1,176 @@
+# See OPQ004 (testing standards and pyramid), OPQ003 (PER coding style).
+name: CI
+
+# One run per ref: a second push to the same branch cancels the run the first one started.
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+on:
+    push:
+        branches: [main, master]
+        # A prise commit changes no code.
+        paths-ignore:
+            - '.worktrees/prises/**'
+            - '.worktrees/PRISES.md'
+    pull_request:
+
+jobs:
+    qa:
+        # Its steps are what `loop/guardrails/verify.sh` mirrors: change one, change the other.
+        name: Core · CS + tests (PHP ${{ matrix.php-version }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                php-version: ['8.2', '8.3', '8.4', '8.5']
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-version }}
+                  extensions: mbstring, sodium
+                  coverage: none
+
+            - name: Cache Composer downloads
+              uses: actions/cache@v6
+              with:
+                  path: ~/.cache/composer
+                  key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock', '**/composer.json') }}
+                  restore-keys: composer-${{ runner.os }}-
+
+            # The lock is resolved on the 8.2 floor; a newer PHP installs it as is.
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: PHP-CS-Fixer (dry-run)
+              run: composer cs:check
+
+            - name: PHPUnit
+              run: composer test -- --fail-on-skipped
+
+    symfony-matrix:
+        # `qa` installs the lock, so it only ever sees one Symfony line. The bridge promises three.
+        name: Serializer bridge · Symfony ${{ matrix.symfony }} (${{ matrix.deps }}, PHP ${{ matrix.php-version }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { php-version: '8.2', symfony: '6.4.*', deps: 'lowest' }
+                    - { php-version: '8.4', symfony: '7.4.*', deps: 'highest' }
+                    - { php-version: '8.4', symfony: '8.0.*', deps: 'lowest' }
+                    - { php-version: '8.5', symfony: '8.*', deps: 'highest' }
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-version }}
+                  extensions: mbstring, sodium
+                  coverage: none
+
+            - name: Pin the Symfony line (Flex)
+              run: |
+                  composer global config --no-plugins allow-plugins.symfony/flex true
+                  composer global require --no-progress --no-scripts --no-plugins symfony/flex
+                  composer config --no-plugins allow-plugins.symfony/flex true
+
+            - name: Resolve the requested Symfony line
+              env:
+                  SYMFONY_REQUIRE: ${{ matrix.symfony }}
+              run: |
+                  composer update --no-interaction --prefer-dist --no-progress \
+                    ${{ matrix.deps == 'lowest' && '--prefer-lowest' || '' }} 'symfony/*'
+
+            - name: Symfony line actually installed
+              run: composer show symfony/serializer --no-ansi | head -n 3
+
+            - name: PHPUnit
+              run: composer test -- --fail-on-skipped
+
+    static-analysis:
+        name: Core · static analysis (PHPStan + Psalm)
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.2'
+                  extensions: mbstring, sodium
+                  coverage: none
+
+            - name: Cache Composer downloads
+              uses: actions/cache@v6
+              with:
+                  path: ~/.cache/composer
+                  key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock', '**/composer.json') }}
+                  restore-keys: composer-${{ runner.os }}-
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: PHPStan (src/, tests/)
+              run: composer phpstan
+
+            - name: Psalm (src/, tests/)
+              run: composer psalm
+
+    manifests:
+        # A split package installs alone: an import the monorepo happens to provide is a fatal
+        # error there.
+        name: Core · manifests (validate + require-checker)
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  # 8.4: composer-require-checker 4.24 requires it.
+                  php-version: '8.4'
+                  extensions: mbstring, sodium
+                  coverage: none
+
+            - name: The root composer.lock matches the path packages
+              run: bin/check-root-lock.sh && bin/check-root-lock-test.sh
+
+            - name: Install composer-require-checker 4.24.0
+              run: |
+                  phar="$RUNNER_TEMP/composer-require-checker"
+                  curl -sSfL -o "$phar" \
+                    https://github.com/maglnet/ComposerRequireChecker/releases/download/4.24.0/composer-require-checker.phar
+                  echo "35d1dfdd7aa94a750f4b4c9b0b22dd5e76b5e9e35fb910c8901f3dafd2ad2ab9  $phar" | sha256sum -c
+                  chmod +x "$phar"
+                  echo "COMPOSER_REQUIRE_CHECKER=$phar" >> "$GITHUB_ENV"
+
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Validate manifests and check imports
+              run: bin/check-manifests.sh
+
+    ci-ok:
+        # The one status check to require on `main`: it needs every job above, so the individual
+        # job names can move without touching the branch protection. A skipped job is not a failure.
+        name: ci-ok
+        if: always()
+        needs: [qa, symfony-matrix, static-analysis, manifests]
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - name: Every job succeeded or was skipped
+              env:
+                  RESULTS: ${{ toJSON(needs) }}
+              run: |
+                  echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+                  echo "$RESULTS" | jq -e 'all(.[]; .result == "success" or .result == "skipped")' >/dev/null

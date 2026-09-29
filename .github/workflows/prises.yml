@@ -1,0 +1,47 @@
+name: Claims registry
+
+# Two triggers, two distinct roles.
+#
+# `pull_request` **filtered on `.worktrees/prises/**`**: a session that places or releases a claim
+# is checked on the spot. The filter is essential — without it, a claim someone else forgot would
+# block PRs that have nothing to do with it, and a check that punishes the innocent ends up
+# disarmed.
+#
+# `schedule`: a forgotten release shows up in no PR, by definition. It is the daily sweep that
+# catches it. A scheduled workflow failure notifies the repository owner, which is the only channel
+# that asks nobody to go and look.
+on:
+  pull_request:
+    paths:
+      - '.worktrees/prises/**'
+      - 'bin/prises-check.sh'
+      - 'bin/prises-check-test.sh'
+      - '.github/workflows/prises.yml'
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: prises-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  registry:
+    name: Stale claims and titles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Before querying the remote: the check checks itself, offline. Its first version declared a
+      # live claim stale, and nothing had seen it coming.
+      - name: Check the check
+        run: bin/prises-check-test.sh
+
+      - name: Check the registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bin/prises-check.sh "${{ github.repository }}"

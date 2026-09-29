@@ -1,0 +1,38 @@
+{
+    "name": "gplanchat/opaque-bridge-serializer",
+    "description": "Symfony Serializer bridge for gplanchat/opaque: opaque values leave the process ciphered and come back opaque, so they can travel through a durable execution journal",
+    "keywords": [
+        "opaque",
+        "secret",
+        "serializer",
+        "symfony",
+        "normalizer",
+        "durable-execution"
+    ],
+    "license": "MIT",
+    "type": "symfony-bridge",
+    "require": {
+        "php": ">=8.2",
+        "gplanchat/opaque": "self.version",
+        "symfony/serializer": "^6.4 || ^7.0 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gplanchat\\Opaque\\Bridge\\Serializer\\": "./"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "authors": [
+        {
+            "name": "Grégory Planchat",
+            "email": "gregory@gyroscops.com"
+        }
+    ]
+}

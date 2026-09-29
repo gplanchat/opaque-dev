@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnRisky="true"
+         failOnWarning="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         beStrictAboutCoverageMetadata="true"
+         displayDetailsOnSkippedTests="true"
+>
+    <php>
+        <!-- A CLI php.ini often says -1: a runaway test then eats the machine. -->
+        <ini name="memory_limit" value="512M"/>
+    </php>
+    <testsuites>
+        <!-- The pyramid (OPQ004): unit only for now. A layer gets its suite the day its first test lands. -->
+        <testsuite name="unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>src/Opaque</directory>
+            <directory>src/Bridge/Serializer</directory>
+        </include>
+    </source>
+</phpunit>

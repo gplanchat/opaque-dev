@@ -1,0 +1,11 @@
+{{- /* The llms.txt index, built from the guide's own pages. Coding agents read the English guide, so the French home gets none. */ -}}
+{{- if eq .Language.Lang "en" -}}
+# Opaque
+
+> Opaque (`gplanchat/opaque`) is a PHP library of opaque value objects: secrets that do not leak through var_dump, print_r, var_export, serialize, string casts or reflection-based normalizers, with libsodium ciphering (`Keyring`, `SodiumSecretBox`, `SodiumSealedBox`) for the ones that must be stored, and a Symfony Serializer bridge (`gplanchat/opaque-bridge-serializer`). Its namespace is `Gplanchat\Opaque`; `Gplanchat\Opaque\disclose()` is the only way to read a secret back; `serialize()` and `json_encode()` on an opaque value throw `LeakRefused`.
+
+## User guide
+{{ range (site.GetPage "/docs").RegularPages.ByWeight }}
+- [{{ .Title }}]({{ .Permalink }})
+{{- end }}
+{{ end -}}

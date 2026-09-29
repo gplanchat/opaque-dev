@@ -1,0 +1,66 @@
+# The Opaque user guide. No baseURL yet: the site has no host. Set it the day it is published.
+locale = 'en-US'
+title = 'Opaque'
+defaultContentLanguage = 'en'
+defaultContentLanguageInSubdir = false
+enableGitInfo = true
+
+# `/llms.txt`: an index of the user guide for coding agents and for Context7, built from the pages
+# themselves so it cannot drift from the guide.
+[outputFormats.llms]
+mediaType = 'text/plain'
+baseName = 'llms'
+isPlainText = true
+notAlternative = true
+
+[outputs]
+home = ['html', 'rss', 'llms']
+
+# Each guide page has a `.fr.md` sibling, rendered under /fr/docs/. Hugo does not fall back from one
+# language to the other: a page without a sibling does not exist under /fr/docs/.
+[languages]
+[languages.en]
+label = 'English'
+weight = 1
+[languages.fr]
+label = 'Français'
+locale = 'fr'
+weight = 2
+
+[module]
+[[module.imports]]
+path = 'github.com/alex-shpak/hugo-book'
+
+# User-facing documentation only (ADRs and WAs stay on GitHub).
+[[module.mounts]]
+source = '../documentation/user'
+target = 'content/docs'
+
+[[module.mounts]]
+source = 'content'
+target = 'content'
+
+[params]
+BookRepo = 'https://github.com/gplanchat/opaque-dev'
+BookEditPath = 'edit/main/documentation/user'
+BookSection = 'docs'
+BookSearch = true
+BookTheme = 'auto'
+BookToC = true
+BookCollapsedLevel = 1
+
+[menu]
+[[menu.after]]
+name = 'Repository'
+url = 'https://github.com/gplanchat/opaque-dev'
+weight = 10
+
+[[menu.after]]
+name = 'Contributor docs (ADRs)'
+url = 'https://github.com/gplanchat/opaque-dev/tree/main/documentation/adr'
+weight = 20
+
+[markup.tableOfContents]
+endLevel = 3
+ordered = false
+startLevel = 2
